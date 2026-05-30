@@ -1,0 +1,1399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>✨ TimeWaster 3000 ✨</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+/* ===== RESET & BASE ===== */
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --p:#ff3cac;--s:#784ba0;--t:#2b86c5;
+  --bg:#0d0d1a;--surface:rgba(255,255,255,0.05);
+  --border:rgba(255,255,255,0.08);--text:#f0eeff;
+  --glow:rgba(255,60,172,0.4);
+}
+body{
+  font-family:'Syne',sans-serif;
+  background:var(--bg);color:var(--text);
+  min-height:100vh;cursor:none;overflow-x:hidden;
+}
+/* themes */
+body.theme-acid{--p:#39ff14;--s:#00f5d4;--t:#f5d300;--bg:#0a0a0a;--glow:rgba(57,255,20,0.35)}
+body.theme-cyber{--p:#f0f;--s:#0ff;--t:#ff0;--bg:#050510;--glow:rgba(255,0,255,0.4)}
+body.theme-lava{--p:#ff4500;--s:#ff8c00;--t:#ffd700;--bg:#0f0500;--glow:rgba(255,69,0,0.4)}
+body.theme-ice{--p:#00d4ff;--s:#7b2fff;--t:#00ffcc;--bg:#020a14;--glow:rgba(0,212,255,0.4)}
+body.theme-rose{--p:#ff6b9d;--s:#c44dff;--t:#ffb347;--bg:#12010a;--glow:rgba(255,107,157,0.4)}
+
+/* ===== CUSTOM CURSOR ===== */
+#cursor{
+  position:fixed;width:14px;height:14px;
+  border-radius:50%;pointer-events:none;z-index:99999;
+  background:var(--p);
+  box-shadow:0 0 10px var(--p),0 0 20px var(--glow);
+  transition:transform 0.1s;
+  transform:translate(-50%,-50%);
+}
+#cursor-ring{
+  position:fixed;width:36px;height:36px;
+  border-radius:50%;pointer-events:none;z-index:99998;
+  border:1.5px solid var(--p);opacity:0.5;
+  transition:left 0.12s ease,top 0.12s ease,transform 0.1s;
+  transform:translate(-50%,-50%);
+}
+#cursor.clicked{transform:translate(-50%,-50%) scale(0.5)}
+
+/* ===== BUBBLES ===== */
+.bubble{
+  position:fixed;border-radius:50%;pointer-events:none;
+  z-index:9997;animation:bubble-rise var(--dur,1.2s) ease-out forwards;
+}
+@keyframes bubble-rise{
+  0%{transform:translate(-50%,-50%) scale(0);opacity:0.9}
+  40%{opacity:0.8}
+  100%{transform:translate(calc(-50% + var(--dx,0px)),calc(-50% + var(--dy,-80px))) scale(1);opacity:0}
+}
+
+/* ===== LAYOUT ===== */
+header{
+  position:sticky;top:0;z-index:40;
+  background:rgba(13,13,26,0.85);
+  backdrop-filter:blur(24px);
+  border-bottom:1px solid var(--border);
+  padding:0 24px;
+}
+.header-inner{
+  max-width:1200px;margin:0 auto;
+  display:flex;align-items:center;justify-content:space-between;
+  height:64px;
+}
+.logo{display:flex;align-items:center;gap:12px}
+.logo-icon{
+  width:40px;height:40px;border-radius:12px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:20px;
+  background:linear-gradient(135deg,var(--p),var(--s));
+  animation:spin-logo 8s linear infinite;
+}
+@keyframes spin-logo{to{transform:rotate(360deg)}}
+.logo-text{font-size:18px;font-weight:800;letter-spacing:-0.5px}
+.logo-sub{font-size:10px;opacity:0.4;font-family:'Space Mono',monospace}
+.grad{
+  background:linear-gradient(135deg,var(--p),var(--s),var(--t));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;
+}
+nav.desktop{display:flex;gap:4px}
+.nav-item{
+  padding:8px 16px;border-radius:10px;cursor:pointer;
+  font-size:14px;font-weight:600;transition:all 0.25s;
+  border:1px solid transparent;
+}
+.nav-item:hover,.nav-item.active{
+  background:var(--surface);
+  border-color:var(--border);
+  color:var(--p);
+}
+.theme-btn{
+  width:38px;height:38px;border-radius:10px;
+  background:var(--surface);border:1px solid var(--border);
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  font-size:17px;transition:all 0.2s;
+}
+.theme-btn:hover{border-color:var(--p);box-shadow:0 0 12px var(--glow)}
+
+/* ===== STATS BAR ===== */
+.stats-bar{
+  max-width:1200px;margin:20px auto 0;padding:0 24px;
+}
+.stats-card{
+  background:var(--surface);backdrop-filter:blur(20px);
+  border:1px solid var(--border);border-radius:16px;
+  padding:16px 24px;
+  display:grid;grid-template-columns:repeat(5,1fr);gap:16px;
+}
+.stat-item{text-align:center}
+.stat-val{font-size:28px;font-weight:800;line-height:1}
+.stat-lbl{font-size:11px;opacity:0.45;margin-top:4px;font-family:'Space Mono',monospace}
+
+/* ===== SECTIONS ===== */
+.section{display:none;max-width:1200px;margin:0 auto;padding:24px}
+.section.active{display:block}
+.section-title{
+  font-size:36px;font-weight:800;text-align:center;
+  margin-bottom:32px;letter-spacing:-1px;
+}
+
+/* ===== CARDS ===== */
+.grid{display:grid;gap:20px}
+.grid-3{grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+.grid-2{grid-template-columns:repeat(auto-fit,minmax(340px,1fr))}
+.card{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:20px;padding:24px;
+  transition:transform 0.3s,box-shadow 0.3s,border-color 0.3s;
+  position:relative;overflow:hidden;
+}
+.card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,var(--p),transparent);
+  opacity:0;transition:opacity 0.3s;
+}
+.card:hover{
+  transform:translateY(-4px);
+  box-shadow:0 20px 60px rgba(0,0,0,0.4),0 0 30px var(--glow);
+  border-color:rgba(255,255,255,0.15);
+}
+.card:hover::before{opacity:1}
+.card-header{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+.card-icon{font-size:28px}
+.card-title{font-size:15px;font-weight:700}
+.card-sub{font-size:11px;opacity:0.45;font-family:'Space Mono',monospace;margin-top:2px}
+.span-2{grid-column:span 2}
+.span-3{grid-column:1/-1}
+
+/* ===== BUTTONS ===== */
+.btn{
+  background:linear-gradient(135deg,var(--p),var(--s));
+  color:#fff;border:none;border-radius:12px;
+  padding:12px 24px;font-weight:700;cursor:pointer;
+  transition:transform 0.15s,box-shadow 0.15s;
+  font-family:'Syne',sans-serif;font-size:14px;
+  width:100%;
+}
+.btn:hover{transform:scale(1.03);box-shadow:0 8px 30px var(--glow)}
+.btn:active{transform:scale(0.97)}
+.btn-sm{padding:8px 16px;font-size:13px;border-radius:10px}
+.btn-ghost{
+  background:var(--surface);color:var(--text);
+  border:1px solid var(--border);
+}
+.btn-ghost:hover{border-color:var(--p);color:var(--p);box-shadow:0 0 12px var(--glow)}
+
+/* ===== INPUTS ===== */
+input[type=text],input[type=number]{
+  background:rgba(0,0,0,0.35);
+  border:1px solid var(--border);
+  border-radius:10px;padding:10px 14px;
+  color:var(--text);font-family:'Syne',sans-serif;
+  width:100%;outline:none;font-size:14px;
+  transition:border-color 0.2s,box-shadow 0.2s;
+}
+input:focus{border-color:var(--p);box-shadow:0 0 0 3px var(--glow)}
+
+/* ===== PROGRESS BAR ===== */
+.prog-track{height:14px;background:rgba(0,0,0,0.4);border-radius:99px;overflow:hidden}
+.prog-fill{
+  height:100%;width:0%;border-radius:99px;
+  background:linear-gradient(90deg,var(--p),var(--s),var(--t));
+  background-size:200%;animation:prog-shimmer 2s linear infinite;
+  transition:width 0.3s;
+}
+@keyframes prog-shimmer{0%{background-position:0%}100%{background-position:200%}}
+
+/* ===== BIG BUTTON ===== */
+#big-btn{
+  width:100%;padding:28px;font-size:22px;font-weight:900;
+  border-radius:16px;cursor:pointer;border:none;
+  background:linear-gradient(135deg,var(--p),var(--s),var(--t));
+  background-size:200%;color:#fff;
+  animation:pulse-glow 2s ease-in-out infinite,gradient-shift 4s linear infinite;
+  font-family:'Syne',sans-serif;
+}
+@keyframes pulse-glow{
+  0%,100%{box-shadow:0 0 20px var(--glow),0 0 40px var(--glow)}
+  50%{box-shadow:0 0 40px var(--glow),0 0 80px var(--glow),0 0 120px var(--glow)}
+}
+@keyframes gradient-shift{
+  0%{background-position:0%}100%{background-position:200%}
+}
+
+/* ===== CATCH ZONE ===== */
+.catch-zone{
+  height:130px;background:rgba(0,0,0,0.3);
+  border-radius:14px;overflow:hidden;position:relative;
+  border:1px dashed var(--border);
+}
+.catch-btn{
+  position:absolute;transition:all 0.08s;
+  padding:10px 20px;border-radius:10px;
+  background:linear-gradient(135deg,var(--p),var(--s));
+  border:none;color:#fff;font-weight:700;cursor:pointer;
+  font-family:'Syne',sans-serif;font-size:13px;
+}
+
+/* ===== SLOT MACHINE ===== */
+.slot-reel{
+  width:64px;height:72px;border-radius:14px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:30px;background:rgba(0,0,0,0.4);
+  border:1px solid var(--border);
+  transition:transform 0.1s;
+}
+.slot-reel.spinning{animation:reel-shake 0.1s ease-in-out infinite alternate}
+@keyframes reel-shake{from{transform:translateY(-3px)}to{transform:translateY(3px)}}
+
+/* ===== WHACK ===== */
+.wh{
+  height:60px;border-radius:12px;cursor:pointer;
+  background:rgba(0,0,0,0.4);border:1px solid var(--border);
+  transition:all 0.15s;display:flex;align-items:center;justify-content:center;
+  font-size:22px;
+}
+.wh:hover{border-color:var(--border)}
+.wh.active{
+  background:linear-gradient(135deg,var(--p),var(--s));
+  border-color:var(--p);
+  box-shadow:0 0 20px var(--glow);
+  animation:wh-pop 0.15s ease;
+}
+@keyframes wh-pop{0%{transform:scale(0.8)}60%{transform:scale(1.15)}100%{transform:scale(1)}}
+
+/* ===== REACTION BOX ===== */
+#rx-box{
+  width:100%;height:110px;border-radius:14px;
+  display:flex;align-items:center;justify-content:center;
+  font-weight:700;font-size:16px;cursor:pointer;
+  background:rgba(0,0,0,0.35);border:1px solid var(--border);
+  transition:all 0.3s;font-family:'Space Mono',monospace;
+}
+#rx-box.go{background:linear-gradient(135deg,#22c55e,#16a34a);border-color:#22c55e;box-shadow:0 0 30px rgba(34,197,94,0.5)}
+#rx-box.wait{background:linear-gradient(135deg,#ef4444,#b91c1c);border-color:#ef4444;box-shadow:0 0 30px rgba(239,68,68,0.5)}
+
+/* ===== TIC TAC TOE ===== */
+.tc{
+  height:64px;border-radius:12px;font-size:24px;font-weight:900;
+  cursor:pointer;background:rgba(0,0,0,0.3);border:1px solid var(--border);
+  color:var(--text);transition:all 0.15s;font-family:'Syne',sans-serif;
+}
+.tc:hover:not(:disabled){background:rgba(255,255,255,0.08);border-color:var(--p)}
+.tc.x-move{color:var(--p)}
+.tc.o-move{color:var(--s)}
+
+/* ===== ZEN ===== */
+.breath-circle{
+  width:120px;height:120px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  background:radial-gradient(circle,var(--p),var(--s));
+  font-weight:700;font-size:13px;text-align:center;
+  transition:transform 4s ease-in-out,box-shadow 4s ease-in-out;
+  box-shadow:0 0 30px var(--glow);
+}
+.focus-dot{
+  width:24px;height:24px;border-radius:50%;
+  background:var(--p);
+  animation:focus-pulse 2.5s ease-in-out infinite;
+}
+@keyframes focus-pulse{
+  0%,100%{box-shadow:0 0 10px var(--p),0 0 25px var(--glow)}
+  50%{box-shadow:0 0 25px var(--p),0 0 60px var(--glow),0 0 100px var(--glow)}
+}
+
+/* ===== THEME PANEL ===== */
+#theme-panel{
+  position:fixed;top:72px;right:16px;z-index:50;
+  background:rgba(13,13,26,0.95);
+  backdrop-filter:blur(24px);
+  border:1px solid var(--border);
+  border-radius:16px;padding:20px;
+  display:none;min-width:200px;
+}
+#theme-panel.open{display:block;animation:panel-drop 0.25s ease}
+@keyframes panel-drop{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+.theme-dot{
+  width:36px;height:36px;border-radius:50%;
+  cursor:pointer;border:2px solid transparent;
+  transition:transform 0.2s,border-color 0.2s;
+}
+.theme-dot:hover{transform:scale(1.2)}
+.theme-dot.active{border-color:#fff;box-shadow:0 0 12px rgba(255,255,255,0.5)}
+
+/* ===== TOASTS ===== */
+#toasts{position:fixed;top:80px;right:16px;z-index:9999;display:flex;flex-direction:column;gap:8px}
+.toast{
+  background:rgba(13,13,26,0.95);
+  backdrop-filter:blur(20px);
+  border:1px solid var(--border);
+  border-left:3px solid var(--p);
+  border-radius:12px;padding:12px 16px;
+  display:flex;align-items:center;gap:10px;
+  animation:toast-in 0.4s cubic-bezier(0.34,1.56,0.64,1);
+  min-width:200px;max-width:280px;
+}
+@keyframes toast-in{from{opacity:0;transform:translateX(60px)}to{opacity:1;transform:translateX(0)}}
+.toast-icon{font-size:18px}
+.toast-msg{font-size:13px;font-weight:600}
+
+/* ===== CONFETTI ===== */
+.confetti{
+  position:fixed;font-size:22px;z-index:9998;
+  pointer-events:none;animation:confetti-fall var(--dur,3s) linear forwards;
+}
+@keyframes confetti-fall{
+  0%{transform:translateY(-10vh) rotate(0deg);opacity:1}
+  100%{transform:translateY(110vh) rotate(720deg);opacity:0}
+}
+
+/* ===== HACKER TERMINAL ===== */
+.terminal{
+  background:#050505;border:1px solid #00ff0030;
+  border-radius:12px;padding:16px;font-family:'Space Mono',monospace;
+  font-size:12px;height:130px;overflow-y:auto;color:#00ff00;
+}
+.terminal::-webkit-scrollbar{width:4px}
+.terminal::-webkit-scrollbar-thumb{background:var(--p);border-radius:4px}
+
+/* ===== INF SCROLL ===== */
+.inf-box{
+  max-height:220px;overflow-y:auto;
+  display:flex;flex-direction:column;gap:8px;
+}
+.inf-box::-webkit-scrollbar{width:4px}
+.inf-box::-webkit-scrollbar-thumb{background:var(--p);border-radius:4px}
+.inf-item{
+  padding:12px;border-radius:10px;font-size:13px;text-align:center;
+  background:rgba(0,0,0,0.3);border:1px solid var(--border);
+}
+
+/* ===== MOBILE NAV ===== */
+.mob-nav{
+  display:none;position:fixed;bottom:0;left:0;right:0;z-index:40;
+  background:rgba(13,13,26,0.95);backdrop-filter:blur(24px);
+  border-top:1px solid var(--border);padding:8px 16px 12px;
+}
+.mob-nav-inner{display:flex;justify-content:space-around}
+.mob-btn{
+  display:flex;flex-direction:column;align-items:center;gap:3px;
+  background:none;border:none;color:var(--text);cursor:pointer;
+  padding:8px 12px;border-radius:10px;transition:all 0.2s;
+  font-family:'Syne',sans-serif;
+}
+.mob-btn.active,.mob-btn:hover{color:var(--p)}
+.mob-btn span:first-child{font-size:22px}
+.mob-btn span:last-child{font-size:10px;font-weight:600;opacity:0.6}
+
+/* ===== COOKIE ===== */
+#cookie-emoji{
+  font-size:72px;display:block;text-align:center;
+  cursor:pointer;transition:transform 0.1s;user-select:none;
+}
+#cookie-emoji:active{transform:scale(0.85)}
+
+/* ===== ACHIEVEMENTS BADGE ===== */
+.ach-badge{
+  position:fixed;top:80px;left:16px;z-index:9999;
+  background:linear-gradient(135deg,var(--p),var(--s));
+  border-radius:12px;padding:12px 18px;
+  display:flex;align-items:center;gap:10px;
+  animation:ach-pop 0.5s cubic-bezier(0.34,1.56,0.64,1);
+  box-shadow:0 8px 30px var(--glow);
+}
+@keyframes ach-pop{
+  from{opacity:0;transform:translateX(-60px) scale(0.8)}
+  to{opacity:1;transform:translateX(0) scale(1)}
+}
+.ach-text{font-size:13px;font-weight:700}
+
+/* ===== MISC ===== */
+.center{text-align:center}
+.mono{font-family:'Space Mono',monospace}
+.muted{opacity:0.45;font-size:12px}
+.big-num{font-size:36px;font-weight:900;letter-spacing:-1px}
+.flex-row{display:flex;align-items:center;gap:8px}
+.flex-between{display:flex;align-items:center;justify-content:space-between}
+.mt4{margin-top:16px}
+.mt2{margin-top:8px}
+.mb2{margin-bottom:8px}
+.mb4{margin-bottom:16px}
+.p-dark{padding:14px;background:rgba(0,0,0,0.3);border-radius:12px;border:1px solid var(--border)}
+.glow-text{text-shadow:0 0 20px var(--p)}
+
+/* ===== BUBBLE MENU ===== */
+#bubble-menu{
+  position:fixed;z-index:9996;pointer-events:none;
+}
+.bubble-opt{
+  position:absolute;transform:translate(-50%,-50%) scale(0);
+  border-radius:50%;width:48px;height:48px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:20px;cursor:pointer;pointer-events:auto;
+  background:rgba(13,13,26,0.95);
+  border:1px solid var(--p);
+  box-shadow:0 0 16px var(--glow);
+  transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+}
+.bubble-opt.show{transform:translate(-50%,-50%) scale(1)}
+
+/* ===== RESPONSIVE ===== */
+@media(max-width:768px){
+  nav.desktop{display:none}
+  .mob-nav{display:block}
+  .stats-card{grid-template-columns:repeat(3,1fr)}
+  .stats-card .stat-item:nth-child(4),.stats-card .stat-item:nth-child(5){grid-column:auto}
+  .span-2{grid-column:span 1}
+  body{padding-bottom:72px}
+}
+</style>
+</head>
+<body>
+
+<!-- API CONFIG -->
+<script>
+  // ← Change this to your server IP when running locally at hackathon
+  // e.g. if your laptop is 192.168.1.10, use http://192.168.1.10:3000
+  const API = 'http://localhost:3000';
+</script>
+
+<!-- LEADERBOARD MODAL -->
+<div id="lb-modal" style="display:none;position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,0.85);backdrop-filter:blur(8px);align-items:center;justify-content:center">
+  <div style="background:#0d0d1a;border:1px solid var(--border);border-radius:24px;padding:32px;width:90%;max-width:560px;max-height:85vh;overflow-y:auto;position:relative">
+    <button onclick="closeLB()" style="position:absolute;top:16px;right:16px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:6px 12px;color:var(--text);cursor:pointer;font-family:'Syne',sans-serif">✕</button>
+    <h2 style="font-size:24px;font-weight:800;margin-bottom:4px" class="grad">🏆 Global Leaderboard</h2>
+    <p style="font-size:12px;opacity:0.4;margin-bottom:24px;font-family:'Space Mono',monospace">Top Wasters Worldwide</p>
+
+    <!-- SUBMIT SCORE -->
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:20px">
+      <p style="font-size:13px;font-weight:700;margin-bottom:10px">Submit Your Score</p>
+      <div style="display:flex;gap:8px">
+        <input type="text" id="lb-name" placeholder="Your name (max 20 chars)" maxlength="20" style="flex:1">
+        <button class="btn" style="width:auto;padding:10px 18px;white-space:nowrap" onclick="submitScore()">Submit 🚀</button>
+      </div>
+      <p id="submit-msg" style="font-size:12px;margin-top:8px;opacity:0.6"></p>
+    </div>
+
+    <!-- STATS ROW -->
+    <div id="global-stats" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px"></div>
+
+    <!-- LEADERBOARD TABLE -->
+    <div id="lb-list" style="display:flex;flex-direction:column;gap:6px">
+      <p style="text-align:center;opacity:0.4;font-size:13px">Loading...</p>
+    </div>
+
+    <!-- ACTIVITY FEED -->
+    <div style="margin-top:20px">
+      <p style="font-size:13px;font-weight:700;margin-bottom:10px;opacity:0.6">🔴 Live Activity</p>
+      <div id="activity-feed" style="display:flex;flex-direction:column;gap:6px;max-height:160px;overflow-y:auto"></div>
+    </div>
+  </div>
+</div>
+
+<!-- CUSTOM CURSOR -->
+<div id="cursor"></div>
+<div id="cursor-ring"></div>
+
+<!-- BUBBLE MENU (right-click) -->
+<div id="bubble-menu"></div>
+
+<!-- TOASTS -->
+<div id="toasts"></div>
+
+<!-- THEME PANEL -->
+<div id="theme-panel">
+  <p style="font-size:13px;font-weight:700;margin-bottom:12px;opacity:0.6">CHOOSE THEME</p>
+  <div style="display:flex;flex-wrap:wrap;gap:10px">
+    <button onclick="setTheme('default',this)" class="theme-dot active" style="background:linear-gradient(135deg,#ff3cac,#784ba0)" title="Default"></button>
+    <button onclick="setTheme('acid',this)" class="theme-dot" style="background:linear-gradient(135deg,#39ff14,#00f5d4)" title="Acid"></button>
+    <button onclick="setTheme('cyber',this)" class="theme-dot" style="background:linear-gradient(135deg,#f0f,#0ff)" title="Cyber"></button>
+    <button onclick="setTheme('lava',this)" class="theme-dot" style="background:linear-gradient(135deg,#ff4500,#ffd700)" title="Lava"></button>
+    <button onclick="setTheme('ice',this)" class="theme-dot" style="background:linear-gradient(135deg,#00d4ff,#7b2fff)" title="Ice"></button>
+    <button onclick="setTheme('rose',this)" class="theme-dot" style="background:linear-gradient(135deg,#ff6b9d,#c44dff)" title="Rose"></button>
+  </div>
+  <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border)">
+    <p style="font-size:11px;opacity:0.4;font-family:'Space Mono',monospace;margin-bottom:10px">BUBBLE STYLE</p>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button onclick="setBubbleStyle('default')" class="btn btn-sm btn-ghost" id="bs-default" style="width:auto;padding:6px 12px">🫧 Bubbles</button>
+      <button onclick="setBubbleStyle('stars')" class="btn btn-sm btn-ghost" id="bs-stars" style="width:auto;padding:6px 12px">⭐ Stars</button>
+      <button onclick="setBubbleStyle('hearts')" class="btn btn-sm btn-ghost" id="bs-hearts" style="width:auto;padding:6px 12px">💖 Hearts</button>
+      <button onclick="setBubbleStyle('fire')" class="btn btn-sm btn-ghost" id="bs-fire" style="width:auto;padding:6px 12px">🔥 Fire</button>
+      <button onclick="setBubbleStyle('sparkle')" class="btn btn-sm btn-ghost" id="bs-sparkle" style="width:auto;padding:6px 12px">✨ Sparkle</button>
+      <button onclick="setBubbleStyle('rainbow')" class="btn btn-sm btn-ghost" id="bs-rainbow" style="width:auto;padding:6px 12px">🌈 Rainbow</button>
+    </div>
+  </div>
+</div>
+
+<!-- HEADER -->
+<header>
+  <div class="header-inner">
+    <div class="logo">
+      <div class="logo-icon">🌀</div>
+      <div>
+        <div class="logo-text grad">TimeWaster</div>
+        <div class="logo-sub">v3000 · 100% useless</div>
+      </div>
+    </div>
+    <nav class="desktop">
+      <div class="nav-item active" onclick="showSection('home',this)">🏠 Home</div>
+      <div class="nav-item" onclick="showSection('games',this)">🎮 Games</div>
+      <div class="nav-item" onclick="showSection('tools',this)">🛠️ Tools</div>
+      <div class="nav-item" onclick="showSection('zen',this)">🧘 Zen</div>
+    </nav>
+    <div style="display:flex;gap:8px;align-items:center">
+      <button class="theme-btn" onclick="openLB()" style="width:auto;padding:0 14px;font-size:13px;font-weight:700">🏆 Leaderboard</button>
+      <button class="theme-btn" onclick="toggleThemes()">🎨</button>
+    </div>
+  </div>
+</header>
+
+<!-- STATS BAR -->
+<div class="stats-bar">
+  <div class="stats-card">
+    <div class="stat-item"><div class="stat-val grad" id="stat-time">0</div><div class="stat-lbl">SECONDS</div></div>
+    <div class="stat-item"><div class="stat-val grad" id="stat-clicks">0</div><div class="stat-lbl">CLICKS</div></div>
+    <div class="stat-item"><div class="stat-val grad" id="stat-score">0</div><div class="stat-lbl">POINTS</div></div>
+    <div class="stat-item"><div class="stat-val grad" id="stat-level">1</div><div class="stat-lbl">LEVEL</div></div>
+    <div class="stat-item"><div class="stat-val grad" id="stat-ach">0</div><div class="stat-lbl">ACHIEVEMENTS</div></div>
+  </div>
+</div>
+
+<!-- HOME SECTION -->
+<section id="section-home" class="section active">
+  <div class="center" style="margin-bottom:36px">
+    <h2 class="section-title">Welcome to <span class="grad glow-text">Nothing</span> 🎉</h2>
+    <p class="muted">100% productivity-free. Guaranteed.</p>
+  </div>
+
+  <div class="grid grid-3">
+    <!-- THE BUTTON -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-icon">🔴</span>
+        <div><div class="card-title">THE Button</div><div class="card-sub">absolutely nothing happens</div></div>
+      </div>
+      <button id="big-btn" onclick="pressBig()">🔥 CLICK ME 🔥</button>
+      <p class="center muted mt2">Pressed <span id="big-count" class="grad" style="-webkit-text-fill-color:revert">0</span> times</p>
+    </div>
+
+    <!-- IMPOSSIBLE PROGRESS -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-icon">📊</span>
+        <div><div class="card-title">Impossible Progress</div><div class="card-sub">never finishes</div></div>
+      </div>
+      <div class="prog-track mb2"><div id="prog-bar" class="prog-fill"></div></div>
+      <div class="flex-between mb4" style="font-size:13px">
+        <span id="prog-msg" class="muted">Click start...</span>
+        <span id="prog-pct" class="mono">0%</span>
+      </div>
+      <button class="btn" onclick="startProg()">▶ Start</button>
+    </div>
+
+    <!-- CATCH ME -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-icon">🏃</span>
+        <div><div class="card-title">Catch Me!</div><div class="card-sub">button runs away</div></div>
+      </div>
+      <div class="catch-zone" id="catch-zone">
+        <button id="catch-btn" class="catch-btn" onmouseover="escapBtn()" onclick="caught()" style="left:50%;top:50%;transform:translate(-50%,-50%)">Catch! 🎯</button>
+      </div>
+      <p class="center muted mt2">Caught: <span id="catch-ct" class="grad" style="-webkit-text-fill-color:revert">0</span></p>
+    </div>
+
+    <!-- COOKIE CLICKER -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-icon">🍪</span>
+        <div><div class="card-title">Cookie Clicker</div><div class="card-sub">click. get cookies.</div></div>
+      </div>
+      <div class="center" style="padding:12px 0">
+        <span id="cookie-emoji" onclick="clickCookie()">🍪</span>
+        <div class="big-num grad" id="cookie-ct">0</div>
+        <div class="muted">cookies</div>
+      </div>
+    </div>
+
+    <!-- SLOTS -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-icon">🎰</span>
+        <div><div class="card-title">Slots</div><div class="card-sub">win nothing</div></div>
+      </div>
+      <div style="display:flex;justify-content:center;gap:12px;margin-bottom:16px">
+        <div id="s1" class="slot-reel">❓</div>
+        <div id="s2" class="slot-reel">❓</div>
+        <div id="s3" class="slot-reel">❓</div>
+      </div>
+      <button class="btn" onclick="spinSlots()">🎲 SPIN</button>
+      <p id="slot-res" class="center muted mt2">Try your luck</p>
+    </div>
+
+    <!-- MAGIC 8 BALL -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-icon">🎱</span>
+        <div><div class="card-title">Magic 8-Ball</div><div class="card-sub">unhelpful answers</div></div>
+      </div>
+      <div class="center" style="padding:8px 0 16px">
+        <div style="width:80px;height:80px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#2a2a3e,#050508);display:flex;align-items:center;justify-content:center;font-size:32px;margin:0 auto;box-shadow:0 0 30px rgba(0,0,0,0.8)">🎱</div>
+        <p id="magic-ans" class="grad mt2" style="font-weight:700;min-height:22px;-webkit-text-fill-color:revert;background:none">Ask something...</p>
+      </div>
+      <button class="btn" onclick="shake8()">🔮 Shake</button>
+    </div>
+
+    <!-- COMPLIMENTS -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-icon">💖</span>
+        <div><div class="card-title">Compliments</div><div class="card-sub">feel good for no reason</div></div>
+      </div>
+      <div class="p-dark mb4" style="min-height:70px;display:flex;align-items:center;justify-content:center">
+        <p id="compliment" style="font-weight:600;text-align:center;font-size:14px">Click for compliment! ✨</p>
+      </div>
+      <button class="btn" onclick="getCompliment()">✨ Feel Good</button>
+    </div>
+
+    <!-- HACKER TERMINAL (span 2) -->
+    <div class="card span-2">
+      <div class="card-header">
+        <span class="card-icon">💻</span>
+        <div><div class="card-title">Hacker Mode</div><div class="card-sub">look extremely cool</div></div>
+      </div>
+      <div class="terminal" id="term"><span style="opacity:0.5">> Ready to hack...</span><br></div>
+      <input type="text" id="hack-in" onkeydown="hackType(event)" placeholder="Type anything to hack..." class="mt2">
+    </div>
+  </div>
+
+  <!-- INFINITE SCROLL -->
+  <div class="card" style="margin-top:20px">
+    <div class="card-header">
+      <span class="card-icon">🔄</span>
+      <div><div class="card-title">Infinite Scroll</div><div class="card-sub">never ends. like your problems.</div></div>
+    </div>
+    <div class="inf-box" id="inf-box"></div>
+  </div>
+</section>
+
+<!-- GAMES SECTION -->
+<section id="section-games" class="section">
+  <h2 class="section-title grad">🎮 Games</h2>
+  <div class="grid grid-3">
+
+    <!-- WHACK A MOLE -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-icon">🐹</span>
+        <div><div class="card-title">Whack-a-Mole</div><div class="card-sub">smash the glowing one</div></div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px">
+        <div class="wh" id="wh0" onclick="whack(0)">🕳️</div>
+        <div class="wh" id="wh1" onclick="whack(1)">🕳️</div>
+        <div class="wh" id="wh2" onclick="whack(2)">🕳️</div>
+        <div class="wh" id="wh3" onclick="whack(3)">🕳️</div>
+        <div class="wh" id="wh4" onclick="whack(4)">🕳️</div>
+        <div class="wh" id="wh5" onclick="whack(5)">🕳️</div>
+        <div class="wh" id="wh6" onclick="whack(6)">🕳️</div>
+        <div class="wh" id="wh7" onclick="whack(7)">🕳️</div>
+        <div class="wh" id="wh8" onclick="whack(8)">🕳️</div>
+      </div>
+      <div class="flex-between">
+        <span style="font-size:14px">Score: <strong id="wh-score" class="grad" style="-webkit-text-fill-color:revert">0</strong></span>
+        <button class="btn btn-sm" style="width:auto" onclick="startWhack()">Start</button>
+      </div>
+    </div>
+
+    <!-- REACTION TIME -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-icon">⚡</span>
+        <div><div class="card-title">Reaction Time</div><div class="card-sub">how fast are you?</div></div>
+      </div>
+      <div id="rx-box" onclick="rxClick()">Click to Start</div>
+      <p class="center muted mt2">Best: <span id="best-rx" class="mono">---</span>ms</p>
+    </div>
+
+    <!-- CLICK SPEED -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-icon">👆</span>
+        <div><div class="card-title">Click Speed</div><div class="card-sub">10 second challenge</div></div>
+      </div>
+      <button onclick="spClick()" class="btn" style="height:80px;font-size:32px;font-weight:900" id="sp-box"><span id="sp-ct">0</span></button>
+      <div class="flex-between mt2 muted">
+        <span>Time: <span id="sp-time" class="mono">10</span>s</span>
+        <span>CPS: <span id="sp-cps" class="mono">0.0</span></span>
+      </div>
+      <button class="btn btn-ghost mt2" onclick="startSpeed()">▶ Start</button>
+    </div>
+
+    <!-- TIC TAC TOE (span all) -->
+    <div class="card span-3">
+      <div class="card-header">
+        <span class="card-icon">⭕</span>
+        <div><div class="card-title">Tic Tac Toe vs Yourself</div><div class="card-sub">the loneliest game ever made</div></div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,64px);gap:10px;margin:0 auto 16px;width:fit-content">
+        <button onclick="ttt(0)" class="tc" id="tc0"></button>
+        <button onclick="ttt(1)" class="tc" id="tc1"></button>
+        <button onclick="ttt(2)" class="tc" id="tc2"></button>
+        <button onclick="ttt(3)" class="tc" id="tc3"></button>
+        <button onclick="ttt(4)" class="tc" id="tc4"></button>
+        <button onclick="ttt(5)" class="tc" id="tc5"></button>
+        <button onclick="ttt(6)" class="tc" id="tc6"></button>
+        <button onclick="ttt(7)" class="tc" id="tc7"></button>
+        <button onclick="ttt(8)" class="tc" id="tc8"></button>
+      </div>
+      <div class="flex-between" style="max-width:240px;margin:0 auto">
+        <p id="ttt-st" style="font-weight:700;font-size:14px">X's turn</p>
+        <button class="btn btn-sm btn-ghost" style="width:auto" onclick="resetTTT()">Reset</button>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- TOOLS SECTION -->
+<section id="section-tools" class="section">
+  <h2 class="section-title grad">🛠️ Tools</h2>
+  <div class="grid grid-3">
+
+    <!-- SILLY PASSWORD -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-icon">🔒</span>
+        <div><div class="card-title">Password Generator</div><div class="card-sub">very secure, trust us</div></div>
+      </div>
+      <div class="p-dark mb4" style="min-height:50px;display:flex;align-items:center;justify-content:center">
+        <p id="pwd" class="mono" style="font-size:14px;word-break:break-all;text-align:center">???</p>
+      </div>
+      <button class="btn" onclick="genPwd()">🔑 Generate</button>
+    </div>
+
+    <!-- COUNTDOWN -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-icon">⏰</span>
+        <div><div class="card-title">Mystery Countdown</div><div class="card-sub">no one knows what it's for</div></div>
+      </div>
+      <div class="center" style="padding:16px 0">
+        <p id="countdown" class="big-num grad mono">00:00:00</p>
+        <p class="muted mt2">counting down to... nothing</p>
+      </div>
+      <button class="btn btn-ghost" onclick="resetCD()">↺ Reset</button>
+    </div>
+
+    <!-- USELESS FACTS -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-icon">🤓</span>
+        <div><div class="card-title">Useless Facts</div><div class="card-sub">you'll forget in 5 seconds</div></div>
+      </div>
+      <div class="p-dark mb4" style="min-height:70px;display:flex;align-items:center;justify-content:center">
+        <p id="fact" style="font-size:13px;text-align:center">Click for fact!</p>
+      </div>
+      <button class="btn" onclick="showFact()">🎲 Random Fact</button>
+    </div>
+
+    <!-- NAME GENERATOR -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-icon">📛</span>
+        <div><div class="card-title">Royal Name Generator</div><div class="card-sub">your true noble identity</div></div>
+      </div>
+      <div class="center" style="padding:12px 0 16px">
+        <p id="gen-name" class="grad" style="font-size:20px;font-weight:800;-webkit-text-fill-color:revert;background:none;min-height:28px">???</p>
+      </div>
+      <button class="btn" onclick="genName()">👑 Generate</button>
+    </div>
+
+    <!-- EXCUSE GENERATOR -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-icon">🙈</span>
+        <div><div class="card-title">Excuse Generator</div><div class="card-sub">blame anything but yourself</div></div>
+      </div>
+      <div class="p-dark mb4" style="min-height:70px;display:flex;align-items:center;justify-content:center">
+        <p id="excuse" style="font-size:13px;text-align:center">Need an excuse?</p>
+      </div>
+      <button class="btn" onclick="genExcuse()">🎭 Generate</button>
+    </div>
+
+    <!-- AGE IN SECONDS -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-icon">👶</span>
+        <div><div class="card-title">Age in Seconds</div><div class="card-sub">existential crisis guaranteed</div></div>
+      </div>
+      <input type="number" id="byear" placeholder="Your birth year" class="mb2">
+      <div class="p-dark mb2 center">
+        <p id="age-sec" class="grad" style="font-size:24px;font-weight:900;-webkit-text-fill-color:revert;background:none">0</p>
+        <p class="muted">seconds old</p>
+      </div>
+      <button class="btn" onclick="calcAge()">Calculate Crisis</button>
+    </div>
+
+  </div>
+</section>
+
+<!-- ZEN SECTION -->
+<section id="section-zen" class="section">
+  <h2 class="section-title grad">🧘 Zen</h2>
+  <div class="grid grid-2" style="max-width:800px;margin:0 auto">
+
+    <!-- BREATHING -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-icon">🌬️</span>
+        <div><div class="card-title">Breathing Exercise</div><div class="card-sub">4 seconds in / 4 out</div></div>
+      </div>
+      <div style="display:flex;justify-content:center;padding:24px 0">
+        <div id="breath" class="breath-circle">Breathe</div>
+      </div>
+      <button class="btn" onclick="startBreath()">▶ Begin</button>
+    </div>
+
+    <!-- FOCUS DOT -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-icon">⚫</span>
+        <div><div class="card-title">Focus Dot</div><div class="card-sub">stare into the void</div></div>
+      </div>
+      <div style="display:flex;justify-content:center;align-items:center;padding:40px 0">
+        <div class="focus-dot"></div>
+      </div>
+      <p class="center muted">Focus time: <span id="focus-t" class="mono">0</span>s</p>
+    </div>
+
+    <!-- IMAGINARY SOUNDS -->
+    <div class="card span-2">
+      <div class="card-header">
+        <span class="card-icon">🔊</span>
+        <div><div class="card-title">Imaginary Sounds</div><div class="card-sub">100% real in your head</div></div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
+        <button onclick="fakeSound('🌧️ Rain')" class="btn btn-ghost" style="padding:20px 8px;flex-direction:column;display:flex;align-items:center;gap:4px">🌧️<span style="font-size:12px">Rain</span></button>
+        <button onclick="fakeSound('🌊 Ocean')" class="btn btn-ghost" style="padding:20px 8px;flex-direction:column;display:flex;align-items:center;gap:4px">🌊<span style="font-size:12px">Ocean</span></button>
+        <button onclick="fakeSound('🔥 Fire')" class="btn btn-ghost" style="padding:20px 8px;flex-direction:column;display:flex;align-items:center;gap:4px">🔥<span style="font-size:12px">Fire</span></button>
+        <button onclick="fakeSound('🌲 Forest')" class="btn btn-ghost" style="padding:20px 8px;flex-direction:column;display:flex;align-items:center;gap:4px">🌲<span style="font-size:12px">Forest</span></button>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- MOBILE NAV -->
+<nav class="mob-nav">
+  <div class="mob-nav-inner">
+    <button class="mob-btn active" onclick="showSection('home',this)"><span>🏠</span><span>Home</span></button>
+    <button class="mob-btn" onclick="showSection('games',this)"><span>🎮</span><span>Games</span></button>
+    <button class="mob-btn" onclick="showSection('tools',this)"><span>🛠️</span><span>Tools</span></button>
+    <button class="mob-btn" onclick="showSection('zen',this)"><span>🧘</span><span>Zen</span></button>
+  </div>
+</nav>
+
+<script>
+// ===== CURSOR =====
+const cur = document.getElementById('cursor');
+const curRing = document.getElementById('cursor-ring');
+let mx=0,my=0;
+document.addEventListener('mousemove',e=>{
+  mx=e.clientX;my=e.clientY;
+  cur.style.left=mx+'px';cur.style.top=my+'px';
+  curRing.style.left=mx+'px';curRing.style.top=my+'px';
+  spawnBubble(mx,my);
+});
+document.addEventListener('mousedown',()=>cur.classList.add('clicked'));
+document.addEventListener('mouseup',()=>cur.classList.remove('clicked'));
+
+// ===== BUBBLE STYLES =====
+let bubbleStyle='default';
+const BUBBLE_STYLES={
+  default:['🫧','🫧','💜','🔵','⚪'],
+  stars:['⭐','✨','💫','🌟','⚡'],
+  hearts:['💖','💗','💝','💕','❤️'],
+  fire:['🔥','💥','✨','🌟','💫'],
+  sparkle:['✨','💎','🌟','💫','⚡'],
+  rainbow:['🔴','🟠','🟡','🟢','🔵','🟣']
+};
+function setBubbleStyle(s){
+  bubbleStyle=s;
+  document.querySelectorAll('[id^="bs-"]').forEach(b=>b.style.borderColor='var(--border)');
+  document.getElementById('bs-'+s).style.borderColor='var(--p)';
+}
+
+let lastBubble=0;
+function spawnBubble(x,y){
+  const now=Date.now();
+  if(now-lastBubble<40)return;
+  lastBubble=now;
+  const opts=BUBBLE_STYLES[bubbleStyle];
+  const el=document.createElement('div');
+  el.className='bubble';
+  const size=Math.random()*24+12;
+  el.style.cssText=`
+    left:${x}px;top:${y}px;
+    width:${size}px;height:${size}px;
+    font-size:${size*0.7}px;
+    display:flex;align-items:center;justify-content:center;
+    --dur:${Math.random()*0.6+0.8}s;
+    --dx:${(Math.random()-0.5)*60}px;
+    --dy:${-(Math.random()*60+30)}px;
+  `;
+  if(bubbleStyle==='default'){
+    const hue=Math.random()*360;
+    el.style.background=`hsla(${hue},70%,70%,0.35)`;
+    el.style.border=`1px solid hsla(${hue},70%,70%,0.5)`;
+    el.style.backdropFilter='blur(4px)';
+  } else {
+    el.textContent=opts[Math.floor(Math.random()*opts.length)];
+    el.style.background='transparent';
+  }
+  document.body.appendChild(el);
+  setTimeout(()=>el.remove(),1500);
+}
+
+// ===== STATE =====
+let S={time:0,clicks:0,score:0,level:1,ach:0};
+try{const sv=localStorage.getItem('tw3k');if(sv)S=JSON.parse(sv);}catch(e){}
+function upd(){
+  document.getElementById('stat-time').textContent=S.time;
+  document.getElementById('stat-clicks').textContent=S.clicks;
+  document.getElementById('stat-score').textContent=S.score;
+  document.getElementById('stat-level').textContent=S.level;
+  document.getElementById('stat-ach').textContent=S.ach;
+  if(document.getElementById('focus-t'))document.getElementById('focus-t').textContent=S.time;
+  try{localStorage.setItem('tw3k',JSON.stringify(S));}catch(e){}
+}
+function addScore(p){S.score+=p;upd()}
+document.addEventListener('click',()=>{S.clicks++;upd()});
+setInterval(()=>{
+  S.time++;upd();
+  if(S.time%60===0){S.level++;toast('⬆️','Level '+S.level+'!');}
+  if(S.time===30)ach('30 Sec Slacker');
+  if(S.time===120)ach('2 Min Waster');
+  if(S.time===300)ach('5 Min Master');
+},1000);
+
+// ===== TOAST =====
+function toast(icon,msg){
+  const d=document.createElement('div');
+  d.className='toast';
+  d.innerHTML=`<span class="toast-icon">${icon}</span><span class="toast-msg">${msg}</span>`;
+  document.getElementById('toasts').appendChild(d);
+  setTimeout(()=>{d.style.opacity='0';d.style.transition='opacity 0.3s';setTimeout(()=>d.remove(),300)},2800);
+}
+function ach(n){S.ach++;upd();confettiBurst();
+  const d=document.createElement('div');d.className='ach-badge';
+  d.innerHTML=`<span style="font-size:22px">🏆</span><div><div style="font-size:11px;opacity:0.7">ACHIEVEMENT</div><div class="ach-text">${n}</div></div>`;
+  document.body.appendChild(d);
+  setTimeout(()=>{d.style.opacity='0';d.style.transition='opacity 0.3s';setTimeout(()=>d.remove(),300)},3500);
+}
+
+// ===== CONFETTI =====
+function confettiBurst(){
+  const e=['🎉','✨','🎊','💫','⭐','💖','🌟'];
+  for(let i=0;i<18;i++){
+    const c=document.createElement('div');c.className='confetti';
+    c.textContent=e[Math.floor(Math.random()*e.length)];
+    c.style.left=Math.random()*100+'vw';
+    c.style.setProperty('--dur',(Math.random()*2+2)+'s');
+    document.body.appendChild(c);
+    setTimeout(()=>c.remove(),4000);
+  }
+}
+
+// ===== SECTION NAV =====
+function showSection(id,el){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.getElementById('section-'+id).classList.add('active');
+  document.querySelectorAll('.nav-item,.mob-btn').forEach(n=>n.classList.remove('active'));
+  if(el)el.classList.add('active');
+}
+
+// ===== THEME =====
+let themeOpen=false;
+function toggleThemes(){
+  themeOpen=!themeOpen;
+  document.getElementById('theme-panel').classList.toggle('open',themeOpen);
+}
+document.addEventListener('click',e=>{
+  if(!e.target.closest('#theme-panel')&&!e.target.closest('.theme-btn')){
+    themeOpen=false;document.getElementById('theme-panel').classList.remove('open');
+  }
+});
+function setTheme(t,btn){
+  document.body.className='';
+  if(t!=='default')document.body.classList.add('theme-'+t);
+  document.querySelectorAll('.theme-dot').forEach(d=>d.classList.remove('active'));
+  if(btn)btn.classList.add('active');
+  toast('🎨',t+' theme activated');
+}
+
+// ===== BIG BUTTON =====
+let bigC=Math.floor(Math.random()*900000)+100000;
+document.getElementById('big-count').textContent=bigC.toLocaleString();
+function pressBig(){
+  bigC++;
+  document.getElementById('big-count').textContent=bigC.toLocaleString();
+  addScore(1);confettiBurst();
+  const msgs=['Nothing happened! 🤷','Still nothing!','Error 404: Purpose Not Found','Try again (dont)','✅ Successfully did nothing'];
+  toast('🔴',msgs[Math.floor(Math.random()*msgs.length)]);
+  if(bigC-parseInt(document.getElementById('big-count').textContent.replace(/,/g,''))+1>=100)ach('100 Clicks Club');
+}
+
+// ===== PROGRESS BAR =====
+let progV=0,progI=null;
+function startProg(){
+  if(progI)clearInterval(progI);
+  progV=0;
+  progI=setInterval(()=>{
+    if(progV<99){
+      progV+=Math.random()*(100-progV)/25;
+      if(progV>99)progV=99;
+      if(Math.random()<0.08&&progV>25){progV-=Math.random()*20;toast('⚠️','Backwards again...');}
+    }
+    if(progV>=98&&Math.random()<0.04){progV=Math.random()*15;toast('💀','Restarting...');}
+    document.getElementById('prog-bar').style.width=progV+'%';
+    document.getElementById('prog-pct').textContent=Math.floor(progV)+'%';
+    document.getElementById('prog-msg').textContent=progV>85?'Almost there...':progV>50?'Getting somewhere...':'Loading...';
+  },100);
+}
+
+// ===== CATCH ME =====
+let catches=0;
+function escapBtn(){
+  const b=document.getElementById('catch-btn');
+  const z=document.getElementById('catch-zone');
+  const zr=z.getBoundingClientRect();
+  b.style.left=Math.random()*(zr.width-100)+'px';
+  b.style.top=Math.random()*(zr.height-44)+'px';
+  b.style.transform='none';
+}
+function caught(){
+  catches++;
+  document.getElementById('catch-ct').textContent=catches;
+  addScore(10);confettiBurst();
+  toast('🎯','Caught x'+catches+'!');
+  if(catches===10)ach('Speed Demon');
+}
+
+// ===== COOKIE =====
+let cookies=0;
+function clickCookie(){
+  cookies++;
+  document.getElementById('cookie-ct').textContent=cookies;
+  addScore(1);
+  document.getElementById('cookie-emoji').style.transform='scale(0.75)';
+  setTimeout(()=>document.getElementById('cookie-emoji').style.transform='scale(1)',100);
+  if(cookies===50)ach('Cookie Monster');
+  if(cookies===200)ach('Cookie Overlord');
+}
+
+// ===== SLOTS =====
+const slotE=['🍒','🍋','🍊','🍇','⭐','💎','7️⃣','🔔'];
+let slotSpinning=false;
+function spinSlots(){
+  if(slotSpinning)return;
+  slotSpinning=true;
+  const reels=[document.getElementById('s1'),document.getElementById('s2'),document.getElementById('s3')];
+  reels.forEach(r=>r.classList.add('spinning'));
+  let sp=0;
+  const int=setInterval(()=>{
+    reels.forEach(r=>r.textContent=slotE[Math.floor(Math.random()*slotE.length)]);
+    if(++sp>=20){
+      clearInterval(int);slotSpinning=false;
+      reels.forEach(r=>r.classList.remove('spinning'));
+      const [a,b,c]=reels.map(r=>r.textContent);
+      if(a===b&&b===c){document.getElementById('slot-res').textContent='🎉 JACKPOT!';addScore(100);confettiBurst();}
+      else if(a===b||b===c||a===c){document.getElementById('slot-res').textContent='😐 Two match! Kinda.';addScore(10);}
+      else{document.getElementById('slot-res').textContent='😅 Nothing. Try again!';}
+    }
+  },80);
+}
+
+// ===== MAGIC 8 BALL =====
+const m8=['Definitely maybe','Ask again never','Signs point to perhaps','Reply hazy','Cannot predict now','Meh','Not so good','Outlook uncertain','The answer is 42','Ask your cat instead'];
+function shake8(){
+  document.getElementById('magic-ans').textContent='🔮 Thinking...';
+  setTimeout(()=>{
+    document.getElementById('magic-ans').textContent=m8[Math.floor(Math.random()*m8.length)];
+    addScore(1);
+  },1000);
+}
+
+// ===== COMPLIMENTS =====
+const comps=['You waste time like a true pro 🌟','Procrastination perfected!','Excellent taste in useless sites','100% awesome human specimen','Immaculate vibes detected 💖','The algorithm loves you','You are the main character','Outstanding click velocity'];
+function getCompliment(){
+  document.getElementById('compliment').textContent=comps[Math.floor(Math.random()*comps.length)];
+  addScore(1);
+}
+
+// ===== HACKER =====
+const hackP=['> Accessing mainframe...','> Bypassing firewall... done','> Downloading RAM... ✓','> sudo make sandwich','> Hello World!','> Error 418: I am a teapot','> Connection refused (politely)','> rm -rf meaningless_work/'];
+function hackType(e){
+  if(e.key==='Enter'){
+    const t=document.getElementById('term');
+    const i=document.getElementById('hack-in');
+    t.innerHTML+=`<span style="color:#888">> ${i.value}</span><br><span>${hackP[Math.floor(Math.random()*hackP.length)]}</span><br>`;
+    i.value='';t.scrollTop=t.scrollHeight;addScore(1);
+  }
+}
+
+// ===== INFINITE SCROLL =====
+const infT=['🤔 Pointless.','💭 Still scrolling.','🎯 Keep going.','⚡ Nothing!','🌟 Great job!','🔄 More nothing...','🎉 Congrats!','🏆 You win nothing!','🫧 Endless void','💀 Keep scrolling...'];
+function initInf(){
+  const box=document.getElementById('inf-box');
+  for(let i=0;i<10;i++){addInfItem(box);}
+  box.addEventListener('scroll',()=>{
+    if(box.scrollTop+box.clientHeight>=box.scrollHeight-40){
+      for(let i=0;i<3;i++)addInfItem(box);
+    }
+  });
+}
+function addInfItem(box){
+  const p=document.createElement('div');
+  p.className='inf-item';
+  p.textContent=infT[Math.floor(Math.random()*infT.length)];
+  box.appendChild(p);
+}
+initInf();
+
+// ===== WHACK =====
+let whScore=0,whActive=-1,whInterval=null;
+function startWhack(){
+  whScore=0;document.getElementById('wh-score').textContent='0';
+  if(whInterval)clearInterval(whInterval);
+  document.querySelectorAll('.wh').forEach(h=>{h.classList.remove('active');h.textContent='🕳️';});
+  whInterval=setInterval(()=>{
+    document.querySelectorAll('.wh').forEach((h,i)=>{h.classList.remove('active');h.textContent='🕳️';});
+    whActive=Math.floor(Math.random()*9);
+    const el=document.getElementById('wh'+whActive);
+    el.classList.add('active');el.textContent='🐹';
+  },650);
+  setTimeout(()=>{
+    clearInterval(whInterval);
+    document.querySelectorAll('.wh').forEach(h=>{h.classList.remove('active');h.textContent='🕳️';});
+    toast('⏱️','Final score: '+whScore);addScore(whScore);
+    if(whScore>=15)ach('Mole Destroyer');
+  },20000);
+}
+function whack(i){
+  if(i===whActive){
+    whScore++;document.getElementById('wh-score').textContent=whScore;
+    document.getElementById('wh'+i).classList.remove('active');
+    document.getElementById('wh'+i).textContent='💥';
+    setTimeout(()=>{document.getElementById('wh'+i).textContent='🕳️';},150);
+    whActive=-1;
+  }
+}
+
+// ===== REACTION =====
+let rxState='ready',rxStart=0,bestRx=Infinity;
+function rxClick(){
+  const b=document.getElementById('rx-box');
+  if(rxState==='ready'){
+    rxState='waiting';
+    b.classList.add('wait');b.textContent='Wait for green...';
+    setTimeout(()=>{
+      if(rxState==='waiting'){
+        rxState='go';b.classList.remove('wait');b.classList.add('go');
+        b.textContent='CLICK NOW!';rxStart=Date.now();
+      }
+    },Math.random()*3000+1000);
+  } else if(rxState==='waiting'){
+    rxState='ready';b.classList.remove('wait');b.textContent='Too early! Click again.';
+  } else if(rxState==='go'){
+    const t=Date.now()-rxStart;
+    if(t<bestRx){bestRx=t;document.getElementById('best-rx').textContent=bestRx;}
+    b.classList.remove('go');b.textContent=t+'ms! Click for another round.';
+    rxState='ready';addScore(Math.max(1,500-t));
+    if(t<200)ach('Lightning Reflexes');
+  }
+}
+
+// ===== CLICK SPEED =====
+let spCount=0,spTimeLeft=10,spRunning=false,spInterval=null;
+function startSpeed(){
+  if(spRunning)return;
+  spRunning=true;spCount=0;spTimeLeft=10;
+  document.getElementById('sp-ct').textContent='0';
+  spInterval=setInterval(()=>{
+    spTimeLeft--;
+    document.getElementById('sp-time').textContent=spTimeLeft;
+    document.getElementById('sp-cps').textContent=(spCount/(10-spTimeLeft||1)).toFixed(1);
+    if(spTimeLeft<=0){
+      clearInterval(spInterval);spRunning=false;
+      toast('⏱️',spCount+' clicks! CPS: '+(spCount/10).toFixed(1));
+      addScore(spCount);
+      if(spCount>=60)ach('Click Machine');
+    }
+  },1000);
+}
+function spClick(){if(spRunning){spCount++;document.getElementById('sp-ct').textContent=spCount;}}
+
+// ===== TIC TAC TOE =====
+let tttBoard=['','','','','','','','',''],tttTurn='X',tttOver=false;
+const tttWins=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+function ttt(i){
+  if(tttBoard[i]||tttOver)return;
+  tttBoard[i]=tttTurn;
+  const el=document.getElementById('tc'+i);
+  el.textContent=tttTurn;
+  el.classList.add(tttTurn==='X'?'x-move':'o-move');
+  if(tttWins.some(([a,b,c])=>tttBoard[a]&&tttBoard[a]===tttBoard[b]&&tttBoard[b]===tttBoard[c])){
+    document.getElementById('ttt-st').textContent=tttTurn+' wins! 🎉';
+    tttOver=true;addScore(20);confettiBurst();return;
+  }
+  if(tttBoard.every(c=>c)){document.getElementById('ttt-st').textContent="It's a draw!";tttOver=true;return;}
+  tttTurn=tttTurn==='X'?'O':'X';
+  document.getElementById('ttt-st').textContent=tttTurn+"'s turn";
+}
+function resetTTT(){
+  tttBoard=Array(9).fill('');tttTurn='X';tttOver=false;
+  for(let i=0;i<9;i++){const el=document.getElementById('tc'+i);el.textContent='';el.className='tc';}
+  document.getElementById('ttt-st').textContent="X's turn";
+}
+
+// ===== TOOLS =====
+const sillyP=['password123','12345678','letmein','iloveyou','hunter2','qwerty123','monkey','dragon'];
+function genPwd(){
+  const p=Math.random()<0.5?sillyP[Math.floor(Math.random()*sillyP.length)]:Array(12).fill(0).map(()=>'ABCDefgh123!@#'[Math.floor(Math.random()*14)]).join('');
+  document.getElementById('pwd').textContent=p;addScore(1);
+}
+
+let cdTarget=Date.now()+(Math.random()*3600+60)*1000;
+function resetCD(){cdTarget=Date.now()+(Math.random()*3600+60)*1000;}
+setInterval(()=>{
+  const r=Math.max(0,cdTarget-Date.now());
+  const h=Math.floor(r/3600000),m=Math.floor((r%3600000)/60000),s=Math.floor((r%60000)/1000);
+  const el=document.getElementById('countdown');
+  if(el)el.textContent=`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  if(r===0)resetCD();
+},1000);
+
+const facts=['Flamingos live in groups called flamboyance','Bananas are technically berries','Honey found in Egyptian tombs was still edible','Octopuses have three hearts','Scotland\'s national animal is the unicorn','Cows form best friend bonds','The shortest war lasted 38 minutes','Sharks existed before trees did','Cleopatra lived closer to the Moon landing than to the pyramids'];
+function showFact(){document.getElementById('fact').textContent=facts[Math.floor(Math.random()*facts.length)];addScore(1);}
+
+const fN=['Sir','Lady','Professor','Captain','Lord','The Honourable'],mN=['Fluffy','Sparkle','Thunder','Fancy','Bumble','Glitter'],lN=['McFluffington','Thunderpants','Sparklebottom','Wafflesworth','Bumblebee III','von Noodleshire'];
+function genName(){document.getElementById('gen-name').textContent=fN[Math.floor(Math.random()*fN.length)]+' '+mN[Math.floor(Math.random()*mN.length)]+' '+lN[Math.floor(Math.random()*lN.length)];addScore(1);}
+
+const exc=['Cat walked on keyboard','Aliens abducted me (briefly)','Mercury was in retrograde','Horoscope said stay in bed','YouTube rabbit hole — 4 hours gone','My plant needed emotional support','The simulation glitched','Phone battery died (it was charging)'];
+function genExcuse(){document.getElementById('excuse').textContent=exc[Math.floor(Math.random()*exc.length)];addScore(1);}
+
+function calcAge(){
+  const y=parseInt(document.getElementById('byear').value);
+  if(isNaN(y)||y<1900||y>2025){toast('❌','Enter a valid birth year!');return;}
+  document.getElementById('age-sec').textContent=Math.floor((2025-y)*365.25*24*60*60).toLocaleString();
+  addScore(1);
+}
+
+// ===== ZEN =====
+let breathInterval=null;
+function startBreath(){
+  const c=document.getElementById('breath');
+  let inhaling=true;
+  if(breathInterval)clearInterval(breathInterval);
+  function cycle(){
+    if(inhaling){c.style.transform='scale(1.5)';c.style.boxShadow='0 0 60px var(--glow)';c.textContent='In...';}
+    else{c.style.transform='scale(1)';c.style.boxShadow='0 0 30px var(--glow)';c.textContent='Out...';}
+    inhaling=!inhaling;
+  }
+  cycle();breathInterval=setInterval(cycle,4000);
+}
+function fakeSound(n){toast('🔊',n+' (imagine it playing)');}
+
+// ===== INIT =====
+upd();
+setTimeout(()=>toast('👋','Welcome to TimeWaster 3000!'),800);
+setTimeout(()=>toast('🫧','Move your cursor for bubbles!'),2500);
+
+// ===== API / LEADERBOARD =====
+
+async function apiGet(path){
+  try{
+    const r=await fetch(API+path);
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    return await r.json();
+  }catch(e){return null;}
+}
+async function apiPost(path,data){
+  try{
+    const r=await fetch(API+path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    return await r.json();
+  }catch(e){return null;}
+}
+
+function openLB(){
+  document.getElementById('lb-modal').style.display='flex';
+  loadLeaderboard();loadGlobalStats();loadActivity();
+}
+function closeLB(){document.getElementById('lb-modal').style.display='none';}
+document.getElementById('lb-modal').addEventListener('click',function(e){if(e.target===this)closeLB();});
+
+async function loadLeaderboard(){
+  const data=await apiGet('/api/leaderboard?limit=10');
+  const el=document.getElementById('lb-list');
+  if(!data){
+    el.innerHTML='<p style="text-align:center;opacity:0.4;font-size:13px;padding:16px">⚠️ Server offline — start server.js first</p>';
+    return;
+  }
+  el.innerHTML=data.leaderboard.map(p=>`
+    <div style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--surface);border:1px solid var(--border);border-radius:12px;${p.rank<=3?'border-color:var(--p);':''}" >
+      <span style="font-size:20px;width:28px;text-align:center">${p.rank===1?'🥇':p.rank===2?'🥈':p.rank===3?'🥉':'#'+p.rank}</span>
+      <div style="flex:1">
+        <div style="font-weight:700;font-size:14px">${p.name}</div>
+        <div style="font-size:11px;opacity:0.4;font-family:'Space Mono',monospace">${p.time}s wasted · ${p.clicks} clicks · Lv${p.level}</div>
+      </div>
+      <div style="font-weight:900;font-size:18px;background:linear-gradient(135deg,var(--p),var(--s));-webkit-background-clip:text;-webkit-text-fill-color:transparent">${p.score.toLocaleString()}</div>
+    </div>
+  `).join('');
+}
+
+async function loadGlobalStats(){
+  const data=await apiGet('/api/stats');
+  const el=document.getElementById('global-stats');
+  if(!data){el.innerHTML='';return;}
+  const s=data.stats;
+  const items=[
+    {label:'Total Players',val:s.totalPlayers},
+    {label:'Total Clicks',val:s.totalClicks.toLocaleString()},
+    {label:'Time Wasted',val:s.totalTimeWastedFormatted},
+  ];
+  el.innerHTML=items.map(i=>`
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px;text-align:center">
+      <div style="font-size:18px;font-weight:900;background:linear-gradient(135deg,var(--p),var(--s));-webkit-background-clip:text;-webkit-text-fill-color:transparent">${i.val}</div>
+      <div style="font-size:10px;opacity:0.4;margin-top:2px;font-family:'Space Mono',monospace">${i.label}</div>
+    </div>
+  `).join('');
+}
+
+async function loadActivity(){
+  const data=await apiGet('/api/activity');
+  const el=document.getElementById('activity-feed');
+  if(!data){el.innerHTML='';return;}
+  el.innerHTML=data.activity.map(a=>`
+    <div style="padding:8px 12px;background:var(--surface);border-radius:8px;font-size:12px;border-left:2px solid var(--p)">
+      <span style="opacity:0.5;font-family:'Space Mono',monospace;font-size:10px">${new Date(a.timestamp).toLocaleTimeString()} </span>
+      ${a.message}
+    </div>
+  `).join('') || '<p style="font-size:12px;opacity:0.4;text-align:center">No activity yet</p>';
+}
+
+async function submitScore(){
+  const name=document.getElementById('lb-name').value.trim();
+  if(!name){document.getElementById('submit-msg').textContent='Enter your name first!';return;}
+  document.getElementById('submit-msg').textContent='Submitting...';
+  const data=await apiPost('/api/score',{
+    name,score:S.score,time:S.time,clicks:S.clicks,level:S.level,achievements:S.ach
+  });
+  if(!data){
+    document.getElementById('submit-msg').textContent='⚠️ Could not reach server. Is it running?';
+    return;
+  }
+  document.getElementById('submit-msg').textContent=`✅ Submitted! You ranked #${data.rank} globally`;
+  toast('🏆','Score submitted! Rank #'+data.rank);
+  loadLeaderboard();loadGlobalStats();loadActivity();
+}
+
+// Auto-post achievement to server when unlocked
+const _origAch=ach;
+window.ach=function(n){
+  _origAch(n);
+  const name=document.getElementById('lb-name')?.value||'Anonymous';
+  apiPost('/api/achievement',{player:name,name:n});
+};
+</script>
+</body>
+</html>
